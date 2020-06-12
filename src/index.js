@@ -5,18 +5,14 @@
 
 'use strict'
 
-const http = require('http')
 const url = require('url')
 const path = require('path')
-
 const BaseAdapter = require('ghost-storage-base')
 const qiniu = require('qiniu')
 const moment = require('moment')
+const fetch = require('node-fetch')
 
-/**
- * Compile an ES6 template literals to a Template function
- * @param {string} source ES6 template literals
- */
+
 const compile = source => {
   return context => {
     const props = Object.keys(context).join(', ')
@@ -62,14 +58,14 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
     this.nameFormat = path.basename(format)
   }
 
-  exists(filename, targetDir) {
+  exists(file, targetDir) {
     return new Promise((resolve, reject) => {
       resolve(false)
     })
   }
 
-  save(image, targetDir) {
-    const context = getPathContext(image.name)
+  save(file, targetDir) {
+    const context = getPathContext(file.name)
 
     const upload = key => new Promise((resolve, reject) => {
       const mac = new qiniu.auth.digest.Mac(this.accessKey, this.secretKey)
@@ -83,7 +79,7 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
 
       const putExtra = new qiniu.form_up.PutExtra()
 
-      uploader.putFile(uploadToken, key, image.path, putExtra, (responseError, responseBody, responseInfo) => {
+      uploader.putFile(uploadToken, key, file.path, putExtra, (responseError, responseBody, responseInfo) => {
         if (responseError) return reject(responseError)
         if (responseInfo.statusCode !== 200) return reject(new Error(responseBody.error))
         resolve(responseBody)
@@ -92,10 +88,10 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
 
     targetDir = targetDir || compile(this.dirFormat)(context)
 
-    image.name = compile(this.nameFormat)(context)
+    file.name = compile(this.nameFormat)(context)
 
-    return this.getUniqueFileName(image, targetDir)
-      .then(filename => upload(filename.replace(/\\/g, '/'), image.path))
+    return this.getUniqueFileName(file, targetDir)
+      .then(filename => upload(filename.replace(/\\/g, '/'), file.path))
       .then(res => url.resolve(this.domain, res.key))
   }
 
@@ -107,22 +103,10 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
     return Promise.reject(new Error('Not implemented'))
   }
 
-  read(image) {
-    let data = ''
-    // console.log('read', image)
-    // const pathname = url.parse(image.path).pathname
-    // if (!pathname) return Promise.reject(new Error(`Could not read file: ${image.path}`))
-    return new Promise((resolve, reject) => {
-      http.get(image, response => {
-        response.on('data', (chunk) => {
-          data += chunk
-        })
-
-        response.on('end', () => {
-          resolve(data)
-        })
-      })
-    })
+  read(file) {
+    const pathname = url.parse(file.path).pathname
+    if (!pathname) return Promise.reject(new Error(`Could not read file: ${file.path}`))
+    return fetch(url.resolve(this.domain, pathname)).then(response => response.buffer())
   }
 }
 

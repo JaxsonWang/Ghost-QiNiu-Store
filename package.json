@@ -1,6 +1,6 @@
 {
   "name": "ghost-qiniu-store",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "src/index.js",
   "keywords": [
     "Ghost",
@@ -8,11 +8,9 @@
     "ghost-store"
   ],
   "dependencies": {
-    "@tryghost/errors": "^0.2.0",
-    "bluebird": "^3.7.2",
     "ghost-storage-base": "0.0.5",
     "moment": "^2.26.0",
-    "qiniu": "^7.3.1",
-    "qn": "^1.3.0"
+    "node-fetch": "^2.6.0",
+    "qiniu": "^7.3.1"
   }
 }
