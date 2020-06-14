@@ -8,8 +8,8 @@
     "ghost-store"
   ],
   "dependencies": {
+    "dayjs": "^1.8.28",
     "ghost-storage-base": "0.0.5",
-    "moment": "^2.26.0",
     "node-fetch": "^2.6.0",
     "qiniu": "^7.3.1"
   }
