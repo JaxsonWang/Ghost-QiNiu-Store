@@ -8,9 +8,9 @@
     "ghost-store"
   ],
   "dependencies": {
-    "dayjs": "^1.8.28",
-    "ghost-storage-base": "0.0.5",
+    "dayjs": "^1.8.29",
+    "ghost-storage-base": "^0.0.5",
     "node-fetch": "^2.6.0",
-    "qiniu": "^7.3.1"
+    "qiniu": "^7.3.2"
   }
 }
