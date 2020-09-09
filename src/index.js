@@ -42,10 +42,10 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
     super()
 
     let {
-      accessKey,
-      secretKey,
-      bucket,
-      domain,
+      accessKey, // 七牛 AK
+      secretKey, // 七牛 SK
+      bucket, // 存储对象空间名字
+      domain, // 存储对象域名
       format = '${year}/${month}/${name}${ext}'
     } = config
 
@@ -56,18 +56,6 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
 
     this.dirFormat = path.dirname(format)
     this.nameFormat = path.basename(format)
-
-    const mac = new qiniu.auth.digest.Mac(this.accessKey, this.secretKey)
-    const putPolicy = new qiniu.rs.PutPolicy({
-      scope: bucket
-    })
-    this.qnUploadToken = putPolicy.uploadToken(mac)
-    // todo: 构建配置类
-    this.qnConfig = new qiniu.conf.Config()
-    // 对象上传类
-    this.qnUploader = new qiniu.form_up.FormUploader(this.qnConfig)
-    // 对象管理类
-    this.qnBucketManager = new qiniu.rs.BucketManager(mac, this.qnConfig)
   }
 
   exists(fileName, targetDir) {
@@ -80,8 +68,20 @@ class GhostQiNiuStoreAdapter extends BaseAdapter {
     const context = getPathContext(file.name) // 获取上传文件基本对象
 
     const upload = key => new Promise((resolve, reject) => {
+      const mac = new qiniu.auth.digest.Mac(this.accessKey, this.secretKey)
+      const putPolicy = new qiniu.rs.PutPolicy({
+        scope: this.bucket,
+        expires: 3600
+      })
+      const qnUploadToken = putPolicy.uploadToken(mac)
+      // todo: 构建配置类
+      const qnConfig = new qiniu.conf.Config()
+      // 对象上传类
+      const qnUploader = new qiniu.form_up.FormUploader(qnConfig)
+      // 对象管理类
+      this.qnBucketManager = new qiniu.rs.BucketManager(mac, qnConfig)
       const putExtra = new qiniu.form_up.PutExtra()
-      this.qnUploader.putFile(this.qnUploadToken, key, file.path, putExtra, (responseError, responseBody, responseInfo) => {
+      qnUploader.putFile(qnUploadToken, key, file.path, putExtra, (responseError, responseBody, responseInfo) => {
         if (responseError) return reject(responseError)
         if (responseInfo.statusCode !== 200) return reject(new Error(responseBody.error))
         resolve(responseBody)

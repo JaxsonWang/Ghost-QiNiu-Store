@@ -7,10 +7,17 @@
     "qiniu",
     "ghost-store"
   ],
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
     "dayjs": "^1.8.29",
     "ghost-storage-base": "^0.0.5",
     "node-fetch": "^2.6.0",
     "qiniu": "^7.3.2"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0",
+    "jest": "^26.4.2"
   }
 }
